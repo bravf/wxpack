@@ -273,7 +273,7 @@ function createDistPage (filePath, codes) {
   }
 
   if (codes.wxss){
-    createFile(fileDistPathName + '.wxss', codes.style)
+    createFile(fileDistPathName + '.wxss', codes.wxss)
   }
 
   if (codes.config){
