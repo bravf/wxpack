@@ -12,18 +12,26 @@
 </style>
 
 <template lang="pug">
-div.color
-  span| hello,world
-  image(src="../images/b.jpeg")
+view.weui-cells.weui-cells_form
+  view.weui-cell
+    view.weui-cell__hd
+      label.weui-label| QQ
+    
+    view.weui-cell__bd
+      input.wei-input(placeholder="请输入QQ号")
+
+view.weui-btn-area
+  button| Login
+
 </template>
 
 <script>
 var urlParse  = require('../npm/url-parse')
 console.log(urlParse('https://github.com/foo/bar'))
 
+
 Page({
   onShow (){
-
   }
 })
 </script>
