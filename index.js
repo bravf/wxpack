@@ -251,14 +251,16 @@ function handleFile (filePath, isWatch) {
   }
 
   // 如果是原生文件，直接 copy
-  else if (['.js', '.json', '.wxml', '.wxs', '.wxss'].includes(extname)) {
+  else if (['.json', '.wxml', '.wxs', '.wxss'].includes(extname)) {
     log('文件：' + relativePath, '拷贝')
     copyFile(filePath, path.join(distPath, relativePath))
+  }
 
-    // 如果是 js，检查 npm 包
-    if (extname === '.js'){
-      handleNPM(fs.readFileSync(filePath).toString())
-    }
+  // 如果 js 文件
+  else if (extname === '.js'){
+    log('文件：' + relativePath, '编译')
+    copyFile(filePath, path.join(distPath, relativePath))
+    handleNPM(fs.readFileSync(filePath).toString())
   }
 
   // 如果是 less, 检查依赖
