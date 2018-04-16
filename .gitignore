@@ -3,7 +3,7 @@
 
 .sass-cache
 node_modules
-test
+project.config.json
 
 *.css.map
 __fepack-tmp

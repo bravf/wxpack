@@ -1,12 +1,12 @@
 {
-  "name": "wxpack",
-  "version": "0.0.1",
-  "description": "",
+  "name": "wxspack",
+  "version": "0.0.5",
+  "description": "微信小程序开发工具",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "bravf",
   "license": "ISC",
   "dependencies": {
     "chokidar": "^2.0.3",
@@ -17,5 +17,8 @@
     "pug": "^2.0.3",
     "url-parse": "^1.3.0",
     "xmldom": "^0.1.27"
+  },
+  "bin": {
+    "wxspack": "index.js"
   }
 }

@@ -1,0 +1,14 @@
+<script>
+App({
+  launch (){
+
+  }
+})
+</script>
+<config>
+{
+  "pages": [
+    "pages/index"
+  ]
+}
+</config>

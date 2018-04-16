@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var fs = require('fs-extra')
 var path = require('path')
 var {DOMParser} =  require('xmldom')
@@ -39,7 +41,7 @@ function handleNPM (jsCode) {
       var distPath = path.join(modulesPath, npmName, `dist/${npmName}.js`)
       // 查 npmName/index.js
       var indexPath = path.join(modulesPath, npmName, `index.js`)
-      // 查 npmName/npmName.js
+      // 查 npmName/${npmName}.js
       var npmNamePath = path.join(modulesPath, npmName, `${npmName}.js`)
 
       // 是否查到
@@ -176,8 +178,9 @@ function makeNodesArray (nodes) {
 // 拆解wpy文件
 function splitWpy (filePath) {
   var content = fs.readFileSync(filePath).toString()
-  var doc = new DOMParser().parseFromString(content)
-  var tags = 'style,template,script,config'.split(',')
+  
+  var doc = new DOMParser().parseFromString(content) || {}
+  var tags = 'style,wxss,less,template,script,config'.split(',')
 
   var codes = {}
   tags.forEach(tag => {
@@ -188,6 +191,17 @@ function splitWpy (filePath) {
     var nodeName = node.nodeName
 
     if (tags.includes(nodeName)){
+      var lang = node.getAttribute('lang')
+      
+      if (nodeName === 'style'){
+        if (lang === 'less'){
+          nodeName = 'less'
+        }
+        else {
+          nodeName = 'wxss'
+        }
+      }
+
       makeNodesArray(node.childNodes).forEach(node2 => {
         codes[nodeName] = (codes[nodeName] || '') + node2.toString()
       })
@@ -204,39 +218,74 @@ function splitWpy (filePath) {
     codes.template = pug.compile(codes.template)({})
   }
 
+  // 如果没有 less 代码
+  if (!codes.less){
+    return Promise.resolve(codes)
+  }
+
   // 处理 less 代码，异步的，返回 promise
   return new Promise((resolve, reject) => {
-    less.render(codes.style, (e, output) => {
-      if (e){
-        error(e)
-        reject(e)
+    // 进入filepath目录
+    process.chdir(path.dirname(filePath))
+
+    // 清除 less 缓存
+    var fileManagers = less.environment && less.environment.fileManagers
+    fileManagers.forEach(fileManager => {
+      if (fileManager.contents) {
+         fileManager.contents = {}
       }
-      else {
-        // 添加依赖
-        output.imports.forEach(importPath => {
-          var lessPath = path.join(rootPath, importPath)
-          lessDepTable[lessPath] = filePath
-        })
-        codes.style = output.css
-        resolve(codes)
-      }
+    })
+
+    less.render(codes.less)
+    .then(output=>{
+       // 添加依赖
+       output.imports.forEach(importPath => {
+        var lessPath = path.join(rootPath, importPath)
+        lessDepTable[lessPath] = filePath
+      })
+
+      codes.less = output.css
+      codes.wxss = (codes.wxss || '') + codes.less
+
+      process.chdir(rootPath)
+      resolve(codes)
+    })
+    .catch(e => {
+      error(e)
+      process.chdir(rootPath)
+      reject(e)
     })
   })
 }
 
 // 根据codes生成dist/page/x/x.wxml, x.wxs, x.wxss, x.json
-function createDistPage (pageName, codes) {
-  createFile(path.join(distPath, 'pages', pageName + '.wxml'), codes.template)
-  createFile(path.join(distPath, 'pages', pageName + '.js'), codes.script)
-  createFile(path.join(distPath, 'pages', pageName + '.wxss'), codes.style)
-  createFile(path.join(distPath, 'pages', pageName + '.json'), codes.config)
+function createDistPage (filePath, codes) {
+  var relativePath = path.relative(srcPath, filePath)
+  var fileDistPath = path.join(distPath, relativePath)
+  var fileDistPathName = fileDistPath.split('.')[0]
+
+  if (codes.template){
+    createFile(fileDistPathName + '.wxml', codes.template)
+  }
+
+  if (codes.script){
+    createFile(fileDistPathName + '.js', codes.script)
+  }
+
+  if (codes.wxss){
+    createFile(fileDistPathName + '.wxss', codes.style)
+  }
+
+  if (codes.config){
+    createFile(fileDistPathName + '.json', codes.config)
+  }
 }
 
 // 处理wpy文件
 function handleWpy (filePath) {
   var pageName = path.basename(filePath).split('.')[0]
   splitWpy(filePath).then(codes => {
-    createDistPage(pageName, codes)
+    createDistPage(filePath, codes)
   })
 }
 
@@ -248,12 +297,6 @@ function handleFile (filePath, isWatch) {
   if (extname === '.wpy'){
     log('文件：' + relativePath, '编译')
     handleWpy(filePath)
-  }
-
-  // 如果是原生文件，直接 copy
-  else if (['.json', '.wxml', '.wxs', '.wxss'].includes(extname)) {
-    log('文件：' + relativePath, '拷贝')
-    copyFile(filePath, path.join(distPath, relativePath))
   }
 
   // 如果 js 文件
@@ -271,8 +314,11 @@ function handleFile (filePath, isWatch) {
     }
   }
 
-  // 其他文件一律抛弃
-  else {}
+  // 其他文件一律拷贝
+  else {
+    log('文件：' + relativePath, '拷贝')
+    copyFile(filePath, path.join(distPath, relativePath))
+  }
 }
 
 function watch () {

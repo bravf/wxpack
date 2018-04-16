@@ -1,0 +1,29 @@
+<style>
+@import '../styles/weui.wxss';
+</style>
+
+<style lang="less">
+@import '../styles/base.less';
+
+.color{
+  color: @color;
+  font-size: 25px;
+}
+</style>
+
+<template lang="pug">
+div.color
+  span| hello,world
+  image(src="../images/b.jpeg")
+</template>
+
+<script>
+var urlParse  = require('../npm/url-parse')
+console.log(urlParse('https://github.com/foo/bar'))
+
+Page({
+  onShow (){
+
+  }
+})
+</script>
