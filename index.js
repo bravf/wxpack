@@ -238,16 +238,16 @@ function splitWpy (filePath) {
 
     less.render(codes.less)
     .then(output=>{
-       // 添加依赖
-       output.imports.forEach(importPath => {
-        var lessPath = path.join(rootPath, importPath)
+      process.chdir(rootPath)
+      // 添加依赖
+      output.imports.forEach(importPath => {
+        var lessPath = path.join(path.dirname(filePath), importPath)
         lessDepTable[lessPath] = filePath
       })
 
       codes.less = output.css
       codes.wxss = (codes.wxss || '') + codes.less
 
-      process.chdir(rootPath)
       resolve(codes)
     })
     .catch(e => {

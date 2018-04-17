@@ -4,24 +4,20 @@
 
 <style lang="less">
 @import '../styles/base.less';
-
-.color{
-  color: @color;
-  font-size: 25px;
-}
 </style>
 
 <template lang="pug">
-view.weui-cells.weui-cells_form
-  view.weui-cell
+
+view.weui-cells.weui-cells_after-title
+  view.weui-cell.weui-cell_input
     view.weui-cell__hd
-      label.weui-label| QQ
+      view.weui-label| QQ
     
     view.weui-cell__bd
-      input.wei-input(placeholder="请输入QQ号")
+      input.weui-input(placeholder="请输入QQ号")
 
 view.weui-btn-area
-  button| Login
+  button.weui-btn(type="primary")| Login
 
 </template>
 
