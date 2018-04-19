@@ -134,20 +134,21 @@ splitWpy = (filePath) ->
   codes = {}
   tags.forEach (tag) -> codes[tag] = ''
 
-  makeNodesArray(doc.childNodes).forEach (node) -> 
-    nodeName = node.nodeName
+  if doc
+    makeNodesArray(doc.childNodes).forEach (node) -> 
+      nodeName = node.nodeName
 
-    if tags.includes nodeName
-      lang = node.getAttribute 'lang'
+      if tags.includes nodeName
+        lang = node.getAttribute 'lang'
 
-      if nodeName is 'style'
-        if lang is 'less'
-          nodeName = 'less'
-        else 
-          nodeName = 'wxss'
-      
-      makeNodesArray(node.childNodes).forEach (node2) -> 
-        codes[nodeName] = codes[nodeName] || '' + node2.toString()
+        if nodeName is 'style'
+          if lang is 'less'
+            nodeName = 'less'
+          else 
+            nodeName = 'wxss'
+        
+        makeNodesArray(node.childNodes).forEach (node2) -> 
+          codes[nodeName] = codes[nodeName] || '' + node2.toString()
   
   # 处理 js 代码
   handleNPM(codes.script) if codes.script
