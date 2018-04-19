@@ -17,7 +17,7 @@ view.weui-cells.weui-cells_after-title
       input.weui-input(placeholder="请输入QQ号")
 
 view.weui-btn-area
-  button.weui-btn(type="primary")| Login
+  button.weui-btn(type="primary")| Login11
 
 </template>
 
